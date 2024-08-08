@@ -8,6 +8,8 @@ spec:
   selector:
     app: {{ .Chart.Name}}
   ports:
-  - port: {{ .Values.clusterIp.ports.port }}
-    targetPort: {{ .Values.clusterIp.ports.targetPort }}
-    protocol: {{ .Values.clusterIp.ports.targetProtocol }}
+  {{- range .Values.clusterIp.ports}}
+  - port: {{ .port }}
+    targetPort: {{ .targetPort }}
+    protocol: {{ .targetProtocol }}
+  {{- end}}

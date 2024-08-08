@@ -2,9 +2,9 @@ common:
   namespace: todoapp
 clusterIp:
   ports:
-    port: 80
-    targetPort: 8080
-    targetProtocol: TCP
+    - port: 80
+      targetPort: 8080
+      targetProtocol: TCP
 
 todoapp:
   env:
