@@ -41,7 +41,7 @@ Create a kubernetes manifest for a pod which will containa ToDo app container:
     1. Use `.Chart.Name` as a prefix for all resources names
     1. Secrets should be controlled from a `values.yaml` file
     1. Secrets `data` should be popualted by a `range` function
-    1. Inside the deployment use `range` to map secrets as environment variables
+   # 1. Inside the deployment use `range` to map secrets as environment variables
     1. Resources requests and limits should controlled from a `values.yaml` file
     1. RollingUpdate parameters should be controlled from a `values.yaml` file
     1. Image repository and tag should be controlled from a `values.yaml` file
@@ -74,3 +74,5 @@ Create a kubernetes manifest for a pod which will containa ToDo app container:
 11. Run command `kubectl get all,cm,secret,ing -A` and put the output in a file called `output.log` in a root of the repository
 12. `README.md` should have instructuions on how to validate the changes
 13. Create PR with your changes and attach it for validation on a platform.
+
+To validate changes run `helm upgrade todoapp .\.infrastructure\todoapp\ --dry-run`

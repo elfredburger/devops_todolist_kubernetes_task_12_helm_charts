@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Chart.Name}}
+  namespace: {{ .Values.common.namespace}}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name}}
+  replicas: {{ .Values.mysql.replicas}}
+  serviceName: {{ .Chart.Name}}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name}}
+    spec:
+      containers:
+      - name: {{ .Chart.Name}}
+        image: {{ .Values.mysql.image}}:{{ .Values.mysql.version}}
+        env:
+        {{- range .Values.mysql.env }}
+        - name: {{ .name }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ $.Chart.Name}}-secrets
+              key: {{ .secretKey }}
+        {{- end }}
+        - name: MYSQL_DATABASE
+          value: {{ .Values.mysql.MYSQL_DATABASE}}
+        ports:
+        - name: {{ .Chart.Name}}
+          containerPort: {{ .Values.mysql.containerPort}}
+        volumeMounts:
+        - name: {{ .Values.mysql.volumeMounts.data.name}}
+          mountPath: {{ .Values.mysql.volumeMounts.data.mountPath}}
+          subPath: {{ .Values.mysql.volumeMounts.data.subPath}}
+        - name: {{ .Values.mysql.volumeMounts.config_map.name}}
+          mountPath: {{ .Values.mysql.volumeMounts.config_map.mountPath}}
+        resources:
+          requests:
+            cpu: {{ .Values.mysql.resources.requests.cpu}}
+            memory: {{ .Values.mysql.resources.requests.memory}}
+        livenessProbe:
+          exec:
+            command: {{ .Values.mysql.livenessProbe.command | toJson}}
+          initialDelaySeconds: {{ .Values.mysql.livenessProbe.initialDelaySeconds}}
+          periodSeconds: {{ .Values.mysql.livenessProbe.periodSeconds}}
+          timeoutSeconds: {{ .Values.mysql.livenessProbe.timeoutSeconds}}
+        readinessProbe:
+          exec:
+            command: {{ .Values.mysql.readinessProbe.command | toJson}}
+          initialDelaySeconds: {{ .Values.mysql.readinessProbe.initialDelaySeconds}}
+          periodSeconds: {{ .Values.mysql.readinessProbe.periodSeconds}}
+          timeoutSeconds: {{ .Values.mysql.readinessProbe.timeoutSeconds}}
+      volumes:
+      - name: {{ .Values.mysql.volumeMounts.config_map.name}}
+        configMap:
+          name: {{ .Chart.Name}}-config
+      tolerations:
+      - key: {{ .Values.mysql.tolerations.key | quote}}
+        operator: {{ .Values.mysql.tolerations.operator | quote}}
+        value: {{ .Chart.Name | quote}}
+        effect: {{ .Values.mysql.tolerations.effect | quote}}
+      affinity:
+        podAntiAffinity:
+          {{ .Values.mysql.affinity.podAntiAffinity.behaviour}}:
+            - labelSelector:
+                matchExpressions:
+                  - key: {{ .Values.mysql.affinity.podAntiAffinity.key | quote}}
+                    operator: {{ .Values.mysql.affinity.podAntiAffinity.operator}}
+                    values:
+                    - {{ .Chart.Name}}
+              topologyKey: {{ .Values.mysql.affinity.podAntiAffinity.topologyKey | quote}}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: {{ .Values.mysql.affinity.nodeAffinity.key | quote}}
+                    operator: {{ .Values.mysql.affinity.nodeAffinity.operator}}
+                    values:
+                    - {{ .Chart.Name | quote}}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ .Values.mysql.volumeClaimTemplates.name}}
+    spec:
+      accessModes: {{ .Values.mysql.volumeClaimTemplates.accessModes}}
+      resources:
+        requests:
+          storage: {{ .Values.mysql.volumeClaimTemplates.storage}}
