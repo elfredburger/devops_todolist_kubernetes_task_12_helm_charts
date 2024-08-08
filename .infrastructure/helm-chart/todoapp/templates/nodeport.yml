@@ -8,7 +8,9 @@ spec:
   selector:
     app: {{ .Chart.Name}}
   ports:
-  - port: {{ .Values.nodePort.ports.port}}
-    targetPort: {{ .Values.nodePort.ports.targetPort}}
-    nodePort: {{ .Values.nodePort.ports.nodePort}}
-    protocol: {{ .Values.nodePort.ports.protocol}}
+  {{- range .Values.nodePort.ports}}
+  - port: {{ .port}}
+    targetPort: {{ .targetPort}}
+    nodePort: {{ .nodePort}}
+    protocol: {{ .protocol}}
+  {{- end }}

@@ -77,10 +77,10 @@ ingress:
 
 nodePort:
   ports:
-    port: 80
-    targetPort: 8080
-    nodePort: 30007
-    protocol: TCP
+    - port: 80
+      targetPort: 8080
+      nodePort: 30007
+      protocol: TCP
 
 pv:
   persistentVolumeReclaimPolicy: Delete

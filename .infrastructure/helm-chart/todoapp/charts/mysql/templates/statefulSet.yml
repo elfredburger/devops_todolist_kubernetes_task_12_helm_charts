@@ -31,27 +31,33 @@ spec:
         - name: {{ .Chart.Name}}
           containerPort: {{ .Values.mysql.containerPort}}
         volumeMounts:
-        - name: {{ .Values.mysql.volumeMounts.data.name}}
-          mountPath: {{ .Values.mysql.volumeMounts.data.mountPath}}
-          subPath: {{ .Values.mysql.volumeMounts.data.subPath}}
-        - name: {{ .Values.mysql.volumeMounts.config_map.name}}
-          mountPath: {{ .Values.mysql.volumeMounts.config_map.mountPath}}
+        {{- with .Values.mysql.volumeMounts}}
+        - name: {{ .data.name}}
+          mountPath: {{ .data.mountPath}}
+          subPath: {{ .data.subPath}}
+        - name: {{ .config_map.name}}
+          mountPath: {{ .config_map.mountPath}}
+        {{- end}}
         resources:
           requests:
             cpu: {{ .Values.mysql.resources.requests.cpu}}
             memory: {{ .Values.mysql.resources.requests.memory}}
         livenessProbe:
           exec:
-            command: {{ .Values.mysql.livenessProbe.command | toJson}}
-          initialDelaySeconds: {{ .Values.mysql.livenessProbe.initialDelaySeconds}}
-          periodSeconds: {{ .Values.mysql.livenessProbe.periodSeconds}}
-          timeoutSeconds: {{ .Values.mysql.livenessProbe.timeoutSeconds}}
+          {{- with .Values.mysql.livenessProbe}}
+            command: {{ .command | toJson}}
+          initialDelaySeconds: {{ .initialDelaySeconds}}
+          periodSeconds: {{ .periodSeconds}}
+          timeoutSeconds: {{ .timeoutSeconds}}
+          {{- end}}
         readinessProbe:
           exec:
-            command: {{ .Values.mysql.readinessProbe.command | toJson}}
-          initialDelaySeconds: {{ .Values.mysql.readinessProbe.initialDelaySeconds}}
-          periodSeconds: {{ .Values.mysql.readinessProbe.periodSeconds}}
-          timeoutSeconds: {{ .Values.mysql.readinessProbe.timeoutSeconds}}
+          {{- with .Values.mysql.readinessProbe}}
+            command: {{ .command | toJson}}
+          initialDelaySeconds: {{ .initialDelaySeconds}}
+          periodSeconds: {{ .periodSeconds}}
+          timeoutSeconds: {{ .timeoutSeconds}}
+          {{- end}}
       volumes:
       - name: {{ .Values.mysql.volumeMounts.config_map.name}}
         configMap:
@@ -62,21 +68,23 @@ spec:
         value: {{ .Chart.Name | quote}}
         effect: {{ .Values.mysql.tolerations.effect | quote}}
       affinity:
+        {{- with .Values.mysql.affinity}}
         podAntiAffinity:
-          {{ .Values.mysql.affinity.podAntiAffinity.behaviour}}:
+          {{ .podAntiAffinity.behaviour}}:
             - labelSelector:
                 matchExpressions:
-                  - key: {{ .Values.mysql.affinity.podAntiAffinity.key | quote}}
-                    operator: {{ .Values.mysql.affinity.podAntiAffinity.operator}}
+                  - key: {{ .podAntiAffinity.key | quote}}
+                    operator: {{ .podAntiAffinity.operator}}
                     values:
-                    - {{ .Chart.Name}}
-              topologyKey: {{ .Values.mysql.affinity.podAntiAffinity.topologyKey | quote}}
+                    - {{ $.Chart.Name}}
+              topologyKey: {{ .podAntiAffinity.topologyKey | quote}}
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: {{ .Values.mysql.affinity.nodeAffinity.key | quote}}
-                    operator: {{ .Values.mysql.affinity.nodeAffinity.operator}}
+                  - key: {{ .nodeAffinity.key | quote}}
+                    operator: {{ .nodeAffinity.operator}}
+          {{- end}}
                     values:
                     - {{ .Chart.Name | quote}}
   volumeClaimTemplates:
